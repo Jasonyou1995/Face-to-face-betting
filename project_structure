@@ -1,0 +1,17 @@
+betting-app/
+├── mobile/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── screens/
+│   │   ├── navigation/
+│   │   ├── services/
+│   │   └── utils/
+├── backend/
+│   ├── src/
+│   │   ├── ai/
+│   │   ├── blockchain/
+│   │   ├── routes/
+│   │   └── zkp/
+└── smart-contracts/
+    ├── contracts/
+    └── test/ 
