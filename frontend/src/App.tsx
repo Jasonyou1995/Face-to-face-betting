@@ -79,6 +79,7 @@ function App() {
 	const searchResultID = async () => {
 		const isFound = resultID === "EASYA";
 		if (!isFound) alert("Betting ID is not found!");
+		setIsResultFound(isFound);
 	};
 	const joinBetting = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
