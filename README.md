@@ -1,6 +1,6 @@
 # PlayCheck: In-Person Betting App with AI Verification
 
-![Logo]("img/logo.jpg")
+![Logo](img/logo.jpg)
 
 Overview
 
