@@ -144,3 +144,12 @@ task = '''
         Your task is to analyze the provided data and fairly determine which player (A or B) is the winner. Ensure your decision is based on the context and evidence provided. 
         Provide a clear final winner determination without any ambiguity. Make sure the content is within 200 words.
        '''
+
+
+
+chat_results = critic.initiate_chat(
+    recipient=winner_verifier,
+    message=task,
+    max_turns=2,
+    summary_method="last_msg"
+)

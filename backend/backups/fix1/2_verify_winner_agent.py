@@ -1,155 +1,172 @@
-# Import necessary libraries and setup configuration
-import autogen  # Assuming this is the package used to create the agents and orchestrate the process
+# Fixed and enhanced winner verification agent
+import autogen
 import os
 from dotenv import load_dotenv
+import json
 
 # Load environment variables
 load_dotenv()
-# Setup for LLM configuration (adjust this as per your specific setup)
-# llm_config = {
-#     'model': 'gpt-4',  # Example model, use whichever model you have configured
-#     'temperature': 0.7,  # Adjust temperature for creativity vs. precision
-#     'max_tokens': 1500,  # Max tokens per response
-# }
+
+# Configure LLM with JSON response format
 llm_config = {
-    "model": "deepseek-chat", # From the list of models provided by OpenAI https://platform.openai.com/docs/models/continuous-model-upgrades
-    "api_key": os.getenv("DEEPSEEK_API_KEY"),
-    "base_url": "https://api.deepseek.com"
+    "config_list": [{
+        "model": "deepseek-chat",
+        "api_key": os.getenv("DEEPSEEK_API_KEY"),
+        "base_url": "https://api.deepseek.com",
+        "temperature": 0.7,
+        "max_tokens": 500,
+        "response_format": {"type": "json_object"}
+    }]
 }
 
-
-# Define the function for the reflection message
+# Enhanced reflection message with content validation
 def reflection_message(recipient, messages, sender, config):
-    return f'''Review the following content. 
-            \n\n {recipient.chat_messages_for_summary(sender)[-1]['content']}'''
+    content = recipient.chat_messages[sender][-1]['content']
+    if not content.strip():
+        return "Error: No content provided for review. Please include game outcome details."
+    return f'''Review the following game outcome:
+{content}
+Provide specific feedback in JSON format:
+{{
+  "reviewer": "your_name",
+  "assessment": "fair|unfair|needs_more_info",
+  "issues": ["list of concerns"],
+  "suggestions": ["improvement ideas"]
+}}'''
 
-# Define the reviewers for the winner verification process
-game_fairness_reviewer = autogen.AssistantAgent(
-    name="Game_Fairness_Reviewer",
-    llm_config=llm_config,
-    system_message="You are a game fairness reviewer, known for "
-        "your expertise in ensuring that game mechanics, rules, and outcomes are fair and balanced for all participants. "
-        "Make sure your suggestion is concise (within 3 bullet points), "
-        "concrete and to the point. "
-        "Begin the review by stating your role."
-)
-
-privacy_security_reviewer = autogen.AssistantAgent(
-    name="Privacy_Security_Reviewer",
-    llm_config=llm_config,
-    system_message="You are a privacy and security reviewer, known for "
-        "your ability to identify and mitigate potential security and privacy risks. "
-        "Make sure your suggestion is concise (within 3 bullet points), "
-        "concrete and to the point. "
-        "Begin the review by stating your role."
-)
-
-ethical_impacts_reviewer = autogen.AssistantAgent(
-    name="Ethical_Impacts_Reviewer",
-    llm_config=llm_config,
-    system_message="You are an ethical impacts reviewer, known for "
-        "your ability to evaluate the social, psychological, and ethical implications of a product. "
-        "Make sure your suggestion is concise (within 3 bullet points), "
-        "concrete and to the point. "
-        "Begin the review by stating your role."
-)
-
-meta_reviewer = autogen.AssistantAgent(
-    name="Meta_Reviewer",
-    llm_config=llm_config,
-    system_message="You are a meta reviewer, tasked with aggregating and synthesizing the reviews from other specialized reviewers. "
-        "You will collect and analyze the summaries of the Game Fairness, Privacy & Security, and Ethical Impacts reviewers. "
-        "Your job is to provide a final, cohesive summary that highlights the key suggestions and any potential conflicts or areas of concern. "
-        "Your review should prioritize clarity and actionable insights for the rule maker. "
-        "Begin your review by stating that you are synthesizing the reviews from the other agents, then summarize their feedback with a focus on resolving any discrepancies and providing a unified final suggestion."
-)
-
-# Define the Winner Verifier agent (replaces Rule Maker in this case)
+# Enhanced winner verifier with structured output
 winner_verifier = autogen.AssistantAgent(
     name="Winner_Verifier",
-    system_message="You are the Winner Verifier. Your role is to analyze the collected data (text input) from the AI agent verifier (oracle) "
-        "and verify the winner based on the provided evidence. This could be a dispute between two players or an assessment of the results. "
-        "You must ensure that the winner is determined fairly, based on the context and content provided. "
-        "Once you have made your determination, please present the winner clearly. "
-        "Only return the final decision without any additional commentary or explanation."
+    system_message="""Analyze game outcome data and determine winner. 
+Input format:
+{
+  "player_a": {"actions": ["list"], "score": number},
+  "player_b": {"actions": ["list"], "score": number},
+  "rules": ["list of game rules"]
+}
+
+Output format:
+{
+  "winner": "A|B|Draw",
+  "reason": "detailed explanation",
+  "confidence": "high|medium|low"
+}""",
+    llm_config=llm_config
 )
 
-# Define the Critic agent
-critic = autogen.AssistantAgent(
-    name="Critic",
-    llm_config=llm_config,
-    system_message="You are a critic. You review the final winner determination created by the Winner Verifier and provide constructive feedback to help improve the quality, balance, and fairness of the decision. "
-        "Your suggestions should address potential gaps, ambiguities, or areas that could lead to unfair determinations. "
-        "Provide your feedback in a concise manner with concrete suggestions for improvements."
-)
+# Unified reviewer template
+def create_reviewer(name, expertise):
+    return autogen.AssistantAgent(
+        name=name,
+        system_message=f"""As {name}, focus on {expertise}. Provide:
+1. Specific improvement suggestions
+2. Potential issues to address
+3. Compliance checks
 
-# Define the nested review chat process for winner verification
-review_chats = [  # This is our nested chat
-    {
-     "recipient": game_fairness_reviewer, 
-     "message": reflection_message, 
-     "summary_method": "reflection_with_llm",
-     "summary_args": 
-        {
-        "summary_prompt" : 
-        "Return review in JSON format only: "
-        "{'Reviewer': 'Game Fairness Reviewer', 'Review': 'Your review content here'}.",
-        },
-     "max_turns": 1
-    },
-    
-    {
-     "recipient": privacy_security_reviewer, 
-     "message": reflection_message, 
-     "summary_method": "reflection_with_llm",
-     "summary_args": 
-        {
-        "summary_prompt" : 
-        "Return review in JSON format only: "
-        "{'Reviewer': 'Privacy & Security Reviewer', 'Review': 'Your review content here'}.",
-        },
-     "max_turns": 1
-    },
-    
-    {
-     "recipient": ethical_impacts_reviewer, 
-     "message": reflection_message, 
-     "summary_method": "reflection_with_llm",
-     "summary_args": 
-        {
-        "summary_prompt" : 
-        "Return review in JSON format only: "
-        "{'Reviewer': 'Ethics Reviewer', 'Review': 'Your review content here'}.",
-        },
-     "max_turns": 1
-    },
-    
-    {
-     "recipient": meta_reviewer, 
-     "message": "Aggregate feedback from all reviewers and provide final suggestions on the winner determination. "
-                "Ensure you synthesize all reviews into a final actionable summary.",
-     "max_turns": 1
-    },
+Return feedback in JSON format:
+{{
+  "reviewer": "{name}",
+  "assessment": "valid|invalid|needs_revision",
+  "issues": ["list"],
+  "suggestions": ["list"]
+}}""",
+        llm_config=llm_config
+    )
+
+# Define specialized reviewers
+reviewers = [
+    create_reviewer("Fairness_Reviewer", "game outcome fairness"),
+    create_reviewer("Security_Reviewer", "data integrity and verification"),
+    create_reviewer("Ethics_Reviewer", "ethical implications of outcome")
 ]
 
-# Register the nested chat process when the Winner Verifier sends the first version of the winner determination
-critic.register_nested_chats(
-    review_chats,
-    trigger=winner_verifier,
+# Enhanced meta-reviewer
+meta_reviewer = autogen.AssistantAgent(
+    name="Meta_Reviewer",
+    system_message="""Analyze all reviews and create unified improvement plan:
+1. Prioritize critical issues
+2. Resolve conflicting feedback
+3. Suggest actionable changes
+
+Output JSON format:
+{
+  "status": "approve|revise",
+  "required_changes": ["list"],
+  "priority": "high|medium|low"
+}""",
+    llm_config=llm_config
 )
 
-# Define the task for the Winner Verifier
-task = '''
-        Based on the provided text input (from AI agent verifier), verify the winner of the game. The input may include details such as actions, events, or decisions made during the game.
-        Your task is to analyze the provided data and fairly determine which player (A or B) is the winner. Ensure your decision is based on the context and evidence provided. 
-        Provide a clear final winner determination without any ambiguity. Make sure the content is within 200 words.
-       '''
-
-
-
-chat_results = critic.initiate_chat(
-    recipient=winner_verifier,
-    message=task,
-    max_turns=2,
-    summary_method="last_msg"
+# New proxy agent to manage workflow
+user_proxy = autogen.UserProxyAgent(
+    name="Admin",
+    human_input_mode="NEVER",
+    code_execution_config=False,
+    default_auto_reply="Continue processing",
+    max_consecutive_auto_reply=1
 )
+
+# Fixed verification workflow
+def verify_winner(game_data):
+    # Validate input
+    try:
+        data = json.loads(game_data)
+        required = ["player_a", "player_b", "rules"]
+        if not all(key in data for key in required):
+            return {"error": "Invalid game data format"}
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON input"}
+
+    # Step 1: Initial verification
+    user_proxy.initiate_chat(
+        winner_verifier,
+        message=f"Verify winner for:\n{game_data}",
+        summary_method="last_msg"
+    )
+    initial_verdict = winner_verifier.last_message()['content']
+    
+    # Step 2: Conduct reviews
+    feedback = []
+    for reviewer in reviewers:
+        user_proxy.initiate_chat(
+            reviewer,
+            message=f"Review this winner verification:\n{initial_verdict}",
+            summary_method="last_msg"
+        )
+        feedback.append(reviewer.last_message()['content'])
+    
+    # Step 3: Meta-review
+    user_proxy.initiate_chat(
+        meta_reviewer,
+        message=f"Combine these reviews:\n{json.dumps(feedback)}",
+        summary_method="last_msg"
+    )
+    
+    # Step 4: Final revision
+    user_proxy.initiate_chat(
+        winner_verifier,
+        message=f"Revise verification based on:\n{meta_reviewer.last_message()['content']}",
+        summary_method="last_msg"
+    )
+    
+    return winner_verifier.last_message()['content']
+
+# Example usage
+if __name__ == "__main__":
+    sample_data = '''{
+        "player_a": {
+            "actions": ["correct guess 1", "incorrect guess 2"],
+            "score": 1
+        },
+        "player_b": {
+            "actions": ["correct guess 1", "correct guess 2"],
+            "score": 2
+        },
+        "rules": [
+            "Each correct guess scores 1 point",
+            "Player with highest score wins"
+        ]
+    }'''
+    
+    result = verify_winner(sample_data)
+    print(json.dumps(json.loads(result), indent=2)

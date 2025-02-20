@@ -2,16 +2,20 @@
 import autogen  # Assuming this is the package used to create the agents and orchestrate the process
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
 
 # Load environment variables
 load_dotenv()
 
 # Setup for LLM configuration (adjust this as per your specific setup)
+# llm_config = {
+#     'model': 'gpt-4',  # Example model, use whichever model you have configured
+#     'temperature': 0.7,  # Adjust temperature for creativity vs. precision
+#     'max_tokens': 1500,  # Max tokens per response
+# }
 llm_config = {
-    "model": "deepseek-chat",  # Model from DeepSeek (update as necessary)
-    "api_key": os.getenv("DEEPSEEK_API_KEY"),  # TODO: Ensure this is securely loaded and not exposed
-    "base_url": "https://api.deepseek.com"  # TODO: Ensure the base URL is trusted and secure
+    "model": "deepseek-chat", # From the list of models provided by OpenAI https://platform.openai.com/docs/models/continuous-model-upgrades
+    "api_key": os.getenv("DEEPSEEK_API_KEY"),
+    "base_url": "https://api.deepseek.com"
 }
 
 # Define the function for the reflection message
@@ -140,48 +144,21 @@ task = '''
         Write a concise but engaging set of game rules for an offline betting app. The rules should be clear, fair, and balanced, 
         ensuring ethical and responsible betting. The rules should be easy to understand and cover key aspects such as 
         betting policies, dispute resolution, and security of funds. Make sure the content is within 200 words.
+
+        Here is a betting game draft:
+
+        We see a random stranger on the street. We don't know anything about them.
+        We can bet on whether they have a beard or not.
+        The payout is 1 to 1.
+        The bet is 1 to 1.
+        The game is fair and random.
+        The game is not rigged.
+        
        '''
 
-# Flask API Setup
-app = Flask(__name__)
-
-# POST endpoint to receive user input and process it through the game rule logic
-@app.route('/generate_rules', methods=['POST'])
-def generate_rules():
-    try:
-        # Receive JSON input from the frontend
-        data = request.get_json()
-
-        # TODO: Ensure input is sanitized and validated
-        user_input = data.get('input', '')
-        
-        if not user_input:
-            return jsonify({"error": "No input provided"}), 400
-
-        # Update the task to include user input dynamically
-        dynamic_task = f'''
-        Write a concise but engaging set of game rules for an offline betting app. The rules should be clear, fair, and balanced, 
-        ensuring ethical and responsible betting. The rules should be easy to understand and cover key aspects such as 
-        betting policies, dispute resolution, and security of funds. The input provided is: "{user_input}". 
-        Make sure the content is within 200 words.
-        '''
-
-        # Initiate the critic chat with the dynamic task
-        chat_results = critic.initiate_chat(
-            recipient=rule_maker,
-            message=dynamic_task,
-            max_turns=2,
-            summary_method="last_msg"
-        )
-
-        # Return the final game rules from the task processing
-        return jsonify({"result": chat_results['response']}), 200
-
-    except Exception as e:
-        # TODO: Handle unexpected errors gracefully
-        return jsonify({"error": str(e)}), 500
-
-
-if __name__ == '__main__':
-    # Run the Flask app
-    app.run(debug=True)
+chat_results = critic.initiate_chat(
+    recipient=rule_maker,
+    message=task,
+    max_turns=2,
+    summary_method="last_msg"
+)

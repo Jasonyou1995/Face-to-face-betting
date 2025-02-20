@@ -1,164 +1,181 @@
-# Import necessary libraries and setup configuration
-import autogen  # Assuming this is the package used to create the agents and orchestrate the process
+# Fixed and improved agent workflow with proper response handling
+import autogen
 import os
+import json
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify
 
-# Load environment variables
 load_dotenv()
 
-# Setup for LLM configuration (adjust this as per your specific setup)
-# llm_config = {
-#     'model': 'gpt-4',  # Example model, use whichever model you have configured
-#     'temperature': 0.7,  # Adjust temperature for creativity vs. precision
-#     'max_tokens': 1500,  # Max tokens per response
-# }
+# Improved LLM configuration with JSON mode
 llm_config = {
-    "model": "deepseek-chat", # From the list of models provided by OpenAI https://platform.openai.com/docs/models/continuous-model-upgrades
-    "api_key": os.getenv("DEEPSEEK_API_KEY"),
-    "base_url": "https://api.deepseek.com"
+    "config_list": [{
+        "model": "deepseek-chat",
+        "api_key": os.getenv("DEEPSEEK_API_KEY"),
+        "base_url": "https://api.deepseek.com",
+        "temperature": 0.7,
+        "max_tokens": 500,
+        "response_format": {"type": "json_object"}
+    }]
 }
 
-# Define the function for the reflection message
+# Modified reflection message to capture rule content
 def reflection_message(recipient, messages, sender, config):
-    return f'''Review the following content. 
-            \n\n {recipient.chat_messages_for_summary(sender)[-1]['content']}'''
+    last_message = recipient.chat_messages[sender][-1]['content']
+    return f'''Review the following game rules:
+{last_message}
+Provide specific feedback in JSON format: {{"reviewer": "your_name", "feedback": ["item1", "item2"]}}'''
 
-# Define the reviewers
-game_fairness_reviewer = autogen.AssistantAgent(
-    name="Game_Fairness_Reviewer",
-    llm_config=llm_config,
-    system_message="You are a game fairness reviewer, known for "
-        "your expertise in ensuring that game mechanics, rules, and outcomes are fair and balanced for all participants. "
-        "Make sure your suggestion is concise (within 3 bullet points), "
-        "concrete and to the point. "
-        "Begin the review by stating your role."
-)
-
-privacy_security_reviewer = autogen.AssistantAgent(
-    name="Privacy_Security_Reviewer",
-    llm_config=llm_config,
-    system_message="You are a privacy and security reviewer, known for "
-        "your ability to identify and mitigate potential security and privacy risks. "
-        "Make sure your suggestion is concise (within 3 bullet points), "
-        "concrete and to the point. "
-        "Begin the review by stating your role."
-)
-
-ethical_impacts_reviewer = autogen.AssistantAgent(
-    name="Ethical_Impacts_Reviewer",
-    llm_config=llm_config,
-    system_message="You are an ethical impacts reviewer, known for "
-        "your ability to evaluate the social, psychological, and ethical implications of a product. "
-        "Make sure your suggestion is concise (within 3 bullet points), "
-        "concrete and to the point. "
-        "Begin the review by stating your role."
-)
-
-meta_reviewer = autogen.AssistantAgent(
-    name="Meta_Reviewer",
-    llm_config=llm_config,
-    system_message="You are a meta reviewer, tasked with aggregating and synthesizing the reviews from other specialized reviewers. "
-        "You will collect and analyze the summaries of the Game Fairness, Privacy & Security, and Ethical Impacts reviewers. "
-        "Your job is to provide a final, cohesive summary that highlights the key suggestions and any potential conflicts or areas of concern. "
-        "Your review should prioritize clarity and actionable insights for the rule maker. "
-        "Begin your review by stating that you are synthesizing the reviews from the other agents, then summarize their feedback with a focus on resolving any discrepancies and providing a unified final suggestion."
-)
-
-# Define the Rule Maker agent
+# Enhanced agents with structured output requirements
 rule_maker = autogen.AssistantAgent(
     name="Rule_Maker",
-    system_message="You are the Rule Maker. Your role is to refine and finalize the game rules based on the aggregated feedback from the meta-reviewer. "
-        "You must carefully analyze all the suggestions and concerns provided by the fairness, privacy/security, and ethical reviewers, "
-        "as well as the consolidated summary from the meta-reviewer. "
-        "Your goal is to craft clear, balanced, and fair game rules that address all critical issues while ensuring a smooth, engaging player experience. "
-        "Only return the final version of the refined game rules without any additional commentary or explanation."
+    system_message="""You are a game rule expert. Create rules that are:
+- Fair and balanced
+- Include clear win/lose conditions
+- Specify dispute resolution
+- Detail fund security measures
+- Ethical and responsible
+
+Format output as JSON:
+{
+  "title": "Game Title",
+  "rules": ["list", "of", "rules"],
+  "verification": "method",
+  "dispute_resolution": "process",
+  "fund_security": "measures"
+}""",
+    llm_config=llm_config
 )
 
-# Define the Critic agent
-critic = autogen.AssistantAgent(
-    name="Critic",
-    llm_config=llm_config,
-    system_message="You are a critic. You review the final game rules created by the Rule Maker and provide constructive feedback to help improve the quality, balance, and clarity of the rules. "
-        "Your focus is to ensure the rules are not only fair and engaging but also clear, concise, and practical for implementation. "
-        "Your suggestions should address potential gaps, ambiguities, or areas that could lead to confusion or unfair play. "
-        "Provide your feedback in a concise manner with concrete suggestions for improvements."
-)
+# Unified reviewer template
+def create_reviewer(name, expertise):
+    return autogen.AssistantAgent(
+        name=name,
+        system_message=f"""As {name}, focus on {expertise}. Provide:
+1. Specific improvement suggestions
+2. Potential issues to address
+3. Compliance checks
 
-# Define the nested review chat process
-review_chats = [  # This is our nested chat
-    {
-     "recipient": game_fairness_reviewer, 
-     "message": reflection_message, 
-     "summary_method": "reflection_with_llm",
-     "summary_args": 
-        {
-        "summary_prompt" : 
-        "Return review in JSON format only: "
-        "{'Reviewer': 'Game Fairness Reviewer', 'Review': 'Your review content here'}.",
-        },
-     "max_turns": 1
-    },
-    
-    {
-     "recipient": privacy_security_reviewer, 
-     "message": reflection_message, 
-     "summary_method": "reflection_with_llm",
-     "summary_args": 
-        {
-        "summary_prompt" : 
-        "Return review in JSON format only: "
-        "{'Reviewer': 'Privacy & Security Reviewer', 'Review': 'Your review content here'}.",
-        },
-     "max_turns": 1
-    },
-    
-    {
-     "recipient": ethical_impacts_reviewer, 
-     "message": reflection_message, 
-     "summary_method": "reflection_with_llm",
-     "summary_args": 
-        {
-        "summary_prompt" : 
-        "Return review in JSON format only: "
-        "{'Reviewer': 'Ethics Reviewer', 'Review': 'Your review content here'}.",
-        },
-     "max_turns": 1
-    },
-    
-    {
-     "recipient": meta_reviewer, 
-     "message": "Aggregate feedback from all reviewers and provide final suggestions on the writing. "
-                "Ensure you synthesize all reviews into a final actionable summary.",
-     "max_turns": 1
-    },
+Return feedback in JSON format with "score" (1-10) and "issues" list.""",
+        llm_config=llm_config
+    )
+
+reviewers = [
+    create_reviewer("Fairness_Reviewer", "game balance and fairness"),
+    create_reviewer("Security_Reviewer", "data privacy and fund security"),
+    create_reviewer("Ethics_Reviewer", "ethical implications and responsible gaming")
 ]
 
-# Register the nested chat process when the Rule Maker sends the first version of the game rule
-critic.register_nested_chats(
-    review_chats,
-    trigger=rule_maker,
+# Enhanced meta-reviewer
+meta_reviewer = autogen.AssistantAgent(
+    name="Meta_Reviewer",
+    system_message="""Analyze all reviews and create unified improvement plan:
+1. Prioritize critical issues
+2. Resolve conflicting feedback
+3. Suggest actionable changes
+
+Output JSON format:
+{
+  "status": "approve|revise",
+  "required_changes": ["list"],
+  "priority": "high|medium|low"
+}""",
+    llm_config=llm_config
 )
 
-# Define the task for the Rule Maker
-task = '''
-        Write a concise but engaging set of game rules for an offline betting app. The rules should be clear, fair, and balanced, 
-        ensuring ethical and responsible betting. The rules should be easy to understand and cover key aspects such as 
-        betting policies, dispute resolution, and security of funds. Make sure the content is within 200 words.
+# New proxy agent to manage workflow
+user_proxy = autogen.UserProxyAgent(
+    name="Admin",
+    human_input_mode="NEVER",
+    code_execution_config=False,
+    default_auto_reply="Continue processing",
+    max_consecutive_auto_reply=1
+)
 
-        Here is a betting game draft:
+# Fixed chat workflow
+def process_rules(task):
+    # Generate initial rules
+    user_proxy.initiate_chat(
+        rule_maker,
+        message=task,
+        summary_method="last_msg"
+    )
+    initial_rules = rule_maker.last_message()['content']
+    
+    # Conduct reviews
+    feedback = []
+    for reviewer in reviewers:
+        user_proxy.initiate_chat(
+            reviewer,
+            message=f"Review these game rules:\n{initial_rules}",
+            summary_method="last_msg"
+        )
+        feedback.append(reviewer.last_message()['content'])
+    
+    # Meta-review
+    user_proxy.initiate_chat(
+        meta_reviewer,
+        message=f"Combine these reviews:\n{json.dumps(feedback)}",
+        summary_method="last_msg"
+    )
+    
+    # Final revision
+    user_proxy.initiate_chat(
+        rule_maker,
+        message=f"Revise rules based on:\n{meta_reviewer.last_message()['content']}",
+        summary_method="last_msg"
+    )
+    
+    return rule_maker.last_message()['content']
 
-        We see a random stranger on the street. We don't know anything about them.
-        We can bet on whether they have a beard or not.
-        The payout is 1 to 1.
-        The bet is 1 to 1.
-        The game is fair and random.
-        The game is not rigged.
+# Flask API with improved handling
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return jsonify({
+        "status": "active",
+        "service": "Rule Generation API",
+        "available_endpoints": {
+            "/generate_rules": "POST - Generate game rules from text input"
+        }
+    }), 200
+
+@app.route('/generate_rules', methods=['POST'])
+def generate_rules():
+    try:
+        # Ensure proper JSON content type
+        if not request.is_json:
+            return jsonify({"error": "Request must be JSON"}), 415
+            
+        data = request.get_json()
+        user_input = data.get('input', '')
         
-       '''
+        if not user_input.strip():
+            return jsonify({"error": "Input cannot be empty"}), 400
+            
+        task = f'''Create betting rules for: {user_input}
+        Requirements:
+        - Max 200 words
+        - Clear dispute resolution
+        - Secure fund handling
+        - Ethical guidelines'''
+        
+        final_rules = process_rules(task)
+        
+        # Improved JSON validation
+        try:
+            validated = json.loads(final_rules)
+            if not isinstance(validated, dict):
+                raise ValueError("Top-level structure must be JSON object")
+            return jsonify(validated), 200
+        except json.JSONDecodeError as e:
+            return jsonify({"error": f"Invalid JSON format: {str(e)}"}), 500
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 500
+            
+    except Exception as e:
+        return jsonify({"error": f"Processing error: {str(e)}"}), 500
 
-chat_results = critic.initiate_chat(
-    recipient=rule_maker,
-    message=task,
-    max_turns=2,
-    summary_method="last_msg"
-)
+if __name__ == '__main__':
+    app.run(debug=False, port=5000)
