@@ -1,6 +1,8 @@
 # PlayCheck:  The Real-World Verification Game with AI & ZKP!
 
-![Logo](img/logo.jpg)  ## Overview
+![Logo](img/logo.jpg)  
+
+## Overview
 
 This application revolutionizes how we verify real-world events! PlayCheck is a gamified checking app where users participate in real-time "challenges" to confirm observations and facts about their surroundings.  Instead of betting, users contribute to a decentralized, AI-powered oracle, earning rewards for accurate and honest contributions. The app leverages Zero-Knowledge Proofs (ZKPs) for enhanced privacy and AI agents for robust verification, all secured by the power of blockchain.  Get ready to explore, observe, and earn!
 
