@@ -1,1 +1,3 @@
 ## PlayCheck ETH EVM Chain integration
+
+This directory contains the Ethereum (ETH) integration for PlayCheck using Foundry, a development toolkit for Ethereum applications. Foundry provides a fast, portable, and modular Ethereum development environment, allowing us to efficiently write, test, and deploy our smart contracts. The integration enables PlayCheck to interact with the Ethereum blockchain, facilitating secure, transparent, and decentralized betting operations. All Solidity contracts, deployment scripts, and test suites for the Ethereum component of our platform are maintained in this folder.
