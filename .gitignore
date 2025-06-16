@@ -23,5 +23,21 @@ node_modules/
 *.sln
 *.sw?
 
+# AI Development Tools & Configuration
+# Cursor IDE configuration and cache
+.cursor/
+*.cursor-*
+
+# Task Master AI files and configuration  
+.taskmaster/
+
+# AI Assistant rules and configuration files
+.windsurfrules
+.roomodes
+.roo/
+
+# AI-generated project structure files
+project_structure
+
 # OS specific
 .DS_Store
