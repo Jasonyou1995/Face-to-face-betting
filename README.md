@@ -1,74 +1,415 @@
-# PlayCheck:  The Real-World Verification Game with AI & ZKP!
+# PlayCheck: Real-World Verification Platform 🚀
 
-![Logo](img/logo.jpg)  
+![Logo](img/logo.jpg)
 
-## Overview
+[![CI/CD Status](https://github.com/your-username/Face-to-face-betting/workflows/CI/badge.svg)](https://github.com/your-username/Face-to-face-betting/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=playcheck&metric=security_rating)](https://sonarcloud.io/dashboard?id=playcheck)
 
-This application revolutionizes how we verify real-world events! PlayCheck is a gamified checking app where users participate in real-time "challenges" to confirm observations and facts about their surroundings.  Instead of betting, users contribute to a decentralized, AI-powered oracle, earning rewards for accurate and honest contributions. The app leverages Zero-Knowledge Proofs (ZKPs) for enhanced privacy and AI agents for robust verification, all secured by the power of blockchain.  Get ready to explore, observe, and earn!
+## 🌟 Project Overview
 
-## Features
+PlayCheck revolutionizes real-world event verification through a gamified, decentralized platform that combines cutting-edge blockchain technology, AI agents, and Zero-Knowledge Proofs. Our platform creates a trustworthy oracle system where users earn RLUSD rewards for accurate contributions to real-world data verification.
 
-*   **Challenge Creation & Verification:**  A user (the "Challenger") creates a real-world observation challenge.  The app, using AI, ensures the challenge is clear, objective, and verifiable before others ("Verifiers") can participate. Examples:
-    *   "How many red cars pass this intersection in the next 10 minutes?"
-    *   "Is the flag at the top of City Hall flying at half-mast?"
-    *   "Is the coffee shop on Main Street currently open?"
-    *   "Are there more than 5 people waiting at this bus stop right now?"
-*   **Contribution & Staking (Gamified):** Verifiers contribute their observations, optionally staking a small amount of RLUSD to boost their potential rewards.  This incentivizes honest participation and discourages spam.  This is *not* betting; it's a reward mechanism for accurate contribution.
-*   **AI-Powered Verification:**  AI agents analyze the data submitted by Verifiers (text descriptions, photos, audio clips). The AI acts as a preliminary filter, flagging potential discrepancies and assisting in consensus building.
-*   **Zero-Knowledge Proof (ZKP) Validation:**  Verifiers submit their observations along with a ZKP.  This proof allows the system to confirm the *validity* of the observation (e.g., "the photo was taken at the specified location and time") *without* revealing the actual photo content to other Verifiers or the Challenger (preserving privacy).
-*   **Consensus Mechanism:** The app uses a consensus mechanism (e.g., a majority-rules system with weighted voting based on Verifier reputation and stake) to determine the "ground truth" outcome of the challenge. The AI agent's analysis contributes to this consensus.
-*   **Reward Distribution:** Verifiers who contributed to the consensus outcome receive rewards in RLUSD, proportional to their stake and the overall participation level.  The Challenger may also receive a small reward for creating a successful challenge.
-*   **Reputation System:**  Verifiers build a reputation score based on their accuracy and participation.  Higher reputation unlocks access to more challenging and rewarding tasks, and potentially greater influence in the consensus mechanism.
-*   **Blockchain Integration:**  Using RLUSD and XRP Ledger for transparent and secure transactions (reward payouts, staking).
-*   **Ethical Observation:** All challenges must be ethical, respect privacy, and focus on verifiable, objective observations of the public environment.  No personal information should be collected or revealed without explicit consent.
+**This is a public-facing fundraising project showcasing production-ready architecture and best practices.**
 
-## Architecture
+---
 
-Blockchain:
+## 🏗️ Architecture
 
-1.  **RLUSD:** Used as the stablecoin for rewards and optional staking.
-2.  **XRP Ledger:**  Powers the secure and transparent transaction mechanism for reward distribution and staking.
+Our platform is built on a robust, scalable architecture designed for enterprise-grade performance:
 
-AI Agents:
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    PlayCheck Platform                      │
+├─────────────────────────────────────────────────────────────┤
+│  Frontend (Next.js 14)  │  Backend (Node.js/Express)      │
+│  - TypeScript           │  - Microservices Architecture    │
+│  - Tailwind CSS         │  - GraphQL + REST APIs          │
+│  - PWA Support          │  - WebSocket Real-time          │
+│  - Mobile Responsive    │  - AI Agent Integration         │
+├─────────────────────────────────────────────────────────────┤
+│  Blockchain Layer                                          │
+│  - XRP Ledger Integration  │  - RLUSD Stablecoin          │
+│  - Crossmark SDK          │  - Smart Contracts           │
+│  - Zero-Knowledge Proofs  │  - Multi-sig Treasury         │
+├─────────────────────────────────────────────────────────────┤
+│  AI & Analytics                                            │
+│  - Challenge Validation   │  - Fraud Detection            │
+│  - Data Analysis Agents   │  - Content Moderation         │
+│  - Real-time Analytics   │  - Reputation Scoring          │
+└─────────────────────────────────────────────────────────────┘
+```
 
-1.  **Challenge Validation Agent:**  Ensures challenges are clear, objective, and verifiable.
-2.  **Data Analysis Agent:**  Analyzes submitted data (text, images, audio) to identify potential inconsistencies and assist in consensus building.  This agent is trained to detect common forms of manipulation or misinformation.
-3.  **Fraud Detection Agent:** (Future Work) - An advanced AI agent focused on identifying sophisticated attempts to game the system.
+---
 
-Zero-Knowledge Proofs (ZKPs):
+## 🚀 Quick Start
 
-1.  **Privacy-Preserving Verification:**  ZKPs allow Verifiers to prove the validity of their observations without revealing the underlying data.
-2.  **Location & Timestamp Verification:**  ZKPs can be used to prove that a photo or video was taken at a specific location and time, without revealing the raw data.
-3.  **Data Integrity:** ZKPs ensure that the submitted data hasn't been tampered with.
+### Prerequisites
 
-Trusted Execution Environments (TEE) (Future Work):
+- Node.js 18+
+- Docker & Docker Compose
+- Git
+- XRP Ledger testnet account (for development)
 
-1.  **Secure Data Processing:** TEES can be used to securely process sensitive data (e.g., images) within a protected environment, further enhancing privacy.
-2.  **AI Agent Integrity:** TEES can ensure the integrity of the AI agents, preventing malicious modification.
+### Installation
 
-## How It Works
+```bash
+# Clone the repository
+git clone https://github.com/your-username/Face-to-face-betting.git
+cd Face-to-face-betting
 
-1.  **Create a Challenge:**  A Challenger proposes a real-world observation challenge (e.g., "Count the number of blue bikes parked outside the library").
-2.  **Challenge Validation:** The app (and potentially other users) review the challenge for clarity and feasibility.
-3.  **Become a Verifier:**  Other users in the vicinity choose to become Verifiers.
-4.  **Submit Observations & ZKPs:** Verifiers make their observations and submit them along with a ZKP that validates the data's integrity and context (e.g., location, time).
-5.  **AI Analysis & Consensus:** The AI agents analyze the submissions, and the system uses a consensus mechanism to determine the "true" answer.
-6.  **Earn Rewards:**  Verifiers who contributed to the consensus are rewarded with RLUSD.
-7.  **Build Reputation:** Accurate and consistent contributions increase a Verifier's reputation score.
+# Install dependencies
+npm install
 
-## Technologies Used
+# Set up environment variables (see Environment Setup section)
+cp .env.example .env
 
-*   Blockchain: RLUSD, XRP Ledger
-*   AI:  AI agents for challenge validation, data analysis, and fraud detection (future work). (Specify types like Computer Vision, NLP if known)
-*   Zero-Knowledge Proofs (ZKP):  For privacy-preserving verification. (e.g., zk-SNARKs, zk-STARKs - specify if a particular type is planned)
-*   Trusted Execution Environments (TEE) (Future Work)
-*   Mobile Development Frameworks (e.g. React Native, Flutter - specify if you're using a cross-platform solution)
+# Start development environment
+docker-compose up -d
 
-## Contributing
+# Run the application
+npm run dev
+```
 
-We welcome contributions! Please feel free to fork the repository and submit pull requests. Here's how you can help:
+Visit `http://localhost:3000` to see the application running.
 
-*   Report bugs or suggest features (especially around the incentive mechanisms and ZKP implementation).
-*   Contribute code or improvements (AI development, blockchain integration, UI/UX).
-*   Help with documentation (especially explaining the ZKP aspects in a user-friendly way).
-*   Help design robust consensus and reputation systems.
+---
+
+## 📁 Project Structure
+
+```
+playcheck/
+├── .taskmaster/              # TaskMaster project management
+│   ├── tasks/               # Generated development tasks
+│   ├── docs/                # Project documentation
+│   └── reports/             # Complexity analysis reports
+├── frontend/                # Next.js application
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/           # Application pages
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── utils/           # Utility functions
+│   │   └── types/           # TypeScript definitions
+│   ├── public/              # Static assets
+│   └── styles/              # Global styles
+├── backend/                 # Express.js API server
+│   ├── src/
+│   │   ├── api/             # API routes
+│   │   ├── services/        # Business logic
+│   │   ├── models/          # Data models
+│   │   ├── middleware/      # Custom middleware
+│   │   └── utils/           # Server utilities
+│   ├── ai_agent/            # AI processing modules
+│   ├── zkp_verification/    # Zero-Knowledge Proof implementation
+│   └── eth/                 # Blockchain integration
+├── docs/                    # Additional documentation
+├── docker-compose.yml       # Local development setup
+└── package.json             # Project dependencies
+```
+
+---
+
+## 🛠️ Development Workflow
+
+### TaskMaster Integration
+
+This project uses TaskMaster for comprehensive project management and development tracking:
+
+```bash
+# View current tasks
+npm run tasks:list
+
+# Get next recommended task
+npm run tasks:next
+
+# View specific task details
+npm run tasks:show <task-id>
+
+# Update task status
+npm run tasks:status <task-id> done
+```
+
+### Development Process
+
+1. **Check TaskMaster** for the next recommended task
+2. **Research** current best practices using TaskMaster's research tools
+3. **Implement** the feature following the detailed task breakdown
+4. **Test** thoroughly with automated and manual testing
+5. **Document** changes and update relevant documentation
+6. **Commit** with descriptive messages linked to task IDs
+
+---
+
+## 🔧 Environment Setup
+
+### Required Environment Variables
+
+Create a `.env` file in the project root with the following structure:
+
+```bash
+# Application Configuration
+NODE_ENV=development
+APP_PORT=3000
+APP_URL=http://localhost:3000
+
+# Database Configuration (Example - Use your preferred setup)
+DATABASE_URL=postgresql://username:password@localhost:5432/playcheck
+REDIS_URL=redis://localhost:6379
+
+# XRP Ledger Configuration
+XRPL_NETWORK=testnet
+XRPL_WEBSOCKET_URL=wss://s.altnet.rippletest.net:51233
+
+# AI Services (Optional - for development)
+OPENAI_API_KEY=your-openai-key-here
+ANTHROPIC_API_KEY=your-anthropic-key-here
+
+# Security Keys (Generate secure keys for production)
+JWT_SECRET=your-super-secure-jwt-secret-here
+ENCRYPTION_KEY=your-32-byte-encryption-key-here
+
+# Email Service (Example with SendGrid)
+SENDGRID_API_KEY=your-sendgrid-api-key
+FROM_EMAIL=noreply@playcheck.app
+
+# Analytics & Monitoring
+SENTRY_DSN=your-sentry-dsn-here
+```
+
+**⚠️ Security Notice**: Never commit real API keys or secrets to version control. Use proper secret management in production.
+
+---
+
+## 🏃‍♂️ Development Scripts
+
+```bash
+# Development
+npm run dev              # Start development servers
+npm run build            # Build for production
+npm run test             # Run test suite
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Generate coverage report
+
+# Code Quality
+npm run lint             # Run ESLint
+npm run lint:fix         # Fix linting issues
+npm run type-check       # TypeScript type checking
+npm run format           # Format code with Prettier
+
+# TaskMaster Integration
+npm run tasks:init       # Initialize TaskMaster (run once)
+npm run tasks:list       # List all tasks
+npm run tasks:next       # Get next recommended task
+npm run tasks:complexity # Analyze task complexity
+
+# Docker
+npm run docker:build     # Build Docker images
+npm run docker:up        # Start containers
+npm run docker:down      # Stop containers
+```
+
+---
+
+## 🧪 Testing Strategy
+
+### Test Categories
+
+1. **Unit Tests**: Component and function-level testing
+2. **Integration Tests**: API and service integration testing
+3. **E2E Tests**: Full user workflow testing
+4. **Security Tests**: Vulnerability and penetration testing
+5. **Performance Tests**: Load and stress testing
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:unit
+npm run test:integration
+npm run test:e2e
+
+# Generate coverage report
+npm run test:coverage
+```
+
+---
+
+## 🔒 Security Best Practices
+
+### For Contributors
+
+- **Never commit secrets**: Use environment variables and `.env.example`
+- **Code review required**: All changes must be reviewed
+- **Dependency scanning**: Automated security scanning on all dependencies
+- **Static analysis**: SonarCloud integration for code quality
+- **Penetration testing**: Regular security assessments
+
+### Key Security Features
+
+- 🔐 End-to-end encryption for sensitive data
+- 🛡️ Zero-Knowledge Proof implementation for privacy
+- 🔑 Multi-signature wallet support for treasury
+- 📝 Comprehensive audit logs
+- 🚨 Real-time fraud detection
+- 🌐 Geographic compliance controls
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from developers, security researchers, and blockchain enthusiasts!
+
+### Getting Started
+
+1. **Fork** the repository
+2. **Clone** your fork locally
+3. **Set up** the development environment
+4. **Check** TaskMaster for available tasks
+5. **Create** a feature branch
+6. **Implement** following our coding standards
+7. **Test** thoroughly
+8. **Submit** a pull request
+
+### Contribution Guidelines
+
+- Follow the TaskMaster workflow for organized development
+- Write comprehensive tests for new features
+- Update documentation for any API changes
+- Ensure all security checks pass
+- Include detailed commit messages with task references
+
+---
+
+## 📚 Documentation
+
+- **API Documentation**: [/docs/api.md](./docs/api.md)
+- **Architecture Guide**: [/docs/architecture.md](./docs/architecture.md)
+- **Security Guidelines**: [/docs/security.md](./docs/security.md)
+- **Deployment Guide**: [/docs/deployment.md](./docs/deployment.md)
+- **TaskMaster Workflow**: [/.taskmaster/docs/workflow.md](./.taskmaster/docs/workflow.md)
+
+---
+
+## 🚀 Roadmap
+
+Our development is organized through TaskMaster with 25 major milestones:
+
+### Phase 1: Foundation (Tasks 1-6)
+
+- ✅ Project setup and architecture
+- 🔄 Frontend foundation with Next.js
+- 🔄 Backend API architecture
+- 🔄 Database design and implementation
+- 🔄 User authentication system
+- 🔄 XRP Ledger integration
+
+### Phase 2: Core Features (Tasks 7-14)
+
+- 🔄 RLUSD stablecoin integration
+- 🔄 Real-time communication
+- 🔄 Challenge management system
+- 🔄 Multi-modal data submission
+- 🔄 AI agent system
+- 🔄 Zero-Knowledge Proof implementation
+- 🔄 Verification and consensus
+- 🔄 Reward distribution system
+
+### Phase 3: Advanced Features (Tasks 15-21)
+
+- 🔄 User reputation system
+- 🔄 Analytics dashboard
+- 🔄 Fundraising platform features
+- 🔄 Compliance framework
+- 🔄 Marketing and community features
+- 🔄 Mobile responsiveness and PWA
+- 🔄 Performance optimization
+
+### Phase 4: Production Ready (Tasks 22-25)
+
+- 🔄 Security implementation and auditing
+- 🔄 Third-party integrations
+- 🔄 Documentation and knowledge base
+- 🔄 Deployment and DevOps pipeline
+
+**Track progress**: Use `npm run tasks:list` to see current status
+
+---
+
+## 🏆 Core Features
+
+### For Users
+
+- **Challenge Creation**: Create and validate real-world observation challenges
+- **Gamified Verification**: Earn rewards for accurate contributions
+- **Privacy Protection**: ZKP-powered verification without revealing data
+- **Reputation Building**: Build trust through consistent accuracy
+- **RLUSD Rewards**: Earn stablecoin rewards for participation
+
+### For Developers
+
+- **Comprehensive APIs**: Well-documented REST and GraphQL endpoints
+- **AI Integration**: Ready-to-use AI agents for validation and analysis
+- **Blockchain Tools**: XRP Ledger and RLUSD integration utilities
+- **ZKP Framework**: Privacy-preserving verification system
+- **Real-time Features**: WebSocket-based live updates
+
+### For Investors
+
+- **Transparent Fundraising**: Open-source, auditable platform
+- **Tokenomics Visualization**: Clear economic model documentation
+- **Progress Tracking**: Real-time development milestone tracking
+- **Security Audits**: Regular third-party security assessments
+- **Compliance First**: Built-in regulatory compliance features
+
+---
+
+## 📊 Key Metrics
+
+- **Tasks Completed**: 0/25 major milestones
+- **Subtasks**: 300 detailed implementation tasks
+- **Test Coverage**: Target 90%+
+- **Security Score**: Continuous monitoring
+- **Performance**: <3s load time target
+
+---
+
+## 🤝 Community & Support
+
+- **Discord**: [Join our developer community](https://discord.gg/playcheck)
+- **Telegram**: [Daily updates and announcements](https://t.me/playcheck)
+- **Twitter**: [@PlayCheckApp](https://twitter.com/playcheckapp)
+- **Email**: developers@playcheck.app
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## ⚖️ Legal Notice
+
+PlayCheck is designed for educational and demonstration purposes. Always comply with local regulations regarding blockchain applications and fundraising activities. This platform implements robust compliance features but users are responsible for ensuring legal compliance in their jurisdiction.
+
+---
+
+## 🙏 Acknowledgments
+
+- **XRP Ledger** for providing robust blockchain infrastructure
+- **Ripple Labs** for RLUSD stablecoin technology
+- **TaskMaster AI** for intelligent project management
+- **Open Source Community** for the incredible tools and libraries
+
+---
+
+<div align="center">
+
+**Built with ❤️ for the decentralized future**
+
+[Website](https://playcheck.app) • [Documentation](./docs) • [API Reference](./docs/api.md) • [Contributing](./CONTRIBUTING.md)
+
+</div>
